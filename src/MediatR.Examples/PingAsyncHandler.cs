@@ -1,5 +1,6 @@
 ﻿namespace MediatR.Examples
 {
+    using System;
     using System.Threading.Tasks;
 
     public class PingAsyncHandler : IAsyncRequestHandler<PingAsync, Pong>

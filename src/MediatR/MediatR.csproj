@@ -37,9 +37,13 @@
     <DocumentationFile>bin\Release\MediatR.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="IAsyncAuthorizeHandler.cs" />
+    <Compile Include="ICancellableAsyncAuthorizeHandler.cs" />
+    <Compile Include="Internal\AsyncAuthorizeHandlerWrapper.cs" />
     <Compile Include="Internal\AsyncNotificationHandlerWrapper.cs" />
     <Compile Include="AsyncRequestHandler.cs" />
     <Compile Include="Internal\AsyncRequestHandlerWrapper.cs" />
+    <Compile Include="Internal\CancellableAsyncAuthorizeHandlerWrapper.cs" />
     <Compile Include="Internal\CancellableAsyncNotificationHandlerWrapper.cs" />
     <Compile Include="CancellableAsyncRequestHandler.cs" />
     <Compile Include="Internal\CancellableAsyncRequestHandlerWrapper.cs" />
@@ -54,8 +58,10 @@
     <Compile Include="IMediator.cs" />
     <Compile Include="INotification.cs" />
     <Compile Include="INotificationHandler.cs" />
+    <Compile Include="Internal\AuthorizeHandlerWrapper.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Internal\NotificationHandlerWrapper.cs" />
+    <Compile Include="IAuthorizeHandler.cs" />
     <Compile Include="RequestHandler.cs" />
     <Compile Include="IRequestHandler.cs" />
     <Compile Include="Mediator.cs" />

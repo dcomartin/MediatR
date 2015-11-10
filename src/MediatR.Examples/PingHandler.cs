@@ -1,4 +1,6 @@
-﻿namespace MediatR.Examples
+﻿using System;
+
+namespace MediatR.Examples
 {
     public class PingHandler : IRequestHandler<Ping, Pong>
     {

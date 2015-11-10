@@ -26,7 +26,7 @@
             container.RegisterInstance<SingleInstanceFactory>(t => container.Resolve(t));
             container.RegisterInstance<MultiInstanceFactory>(t => container.ResolveAll(t));
 
-            var mediator = container.Resolve<IMediator>();
+           var mediator = container.Resolve<IMediator>();
 
             return mediator;
         }
@@ -36,6 +36,11 @@
             return type.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(INotificationHandler<>) || x.GetGenericTypeDefinition() == typeof(IAsyncNotificationHandler<>)));
         }
 
+        static bool IsAuthorizeHandler(Type type)
+        {
+            return type.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(IAuthorizeHandler<,>) || x.GetGenericTypeDefinition() == typeof(IAsyncAuthorizeHandler<,>)));
+        }
+
         static LifetimeManager GetLifetimeManager(Type type)
         {
             return IsNotificationHandler(type) ? new ContainerControlledLifetimeManager() : null;
@@ -43,7 +48,7 @@
 
         static string GetName(Type type)
         {
-            return IsNotificationHandler(type) ? string.Format("HandlerFor" + type.Name) : string.Empty;
+            return IsNotificationHandler(type) || IsAuthorizeHandler(type) ? string.Format("HandlerFor" + type.Name) : string.Empty;
         }
     }
 }

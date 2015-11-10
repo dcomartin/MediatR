@@ -30,6 +30,13 @@ namespace MediatR
 
         public TResponse Send<TResponse>(IRequest<TResponse> request)
         {
+            // Call Pre Handlers
+            var authorizeHandlers = GetAuthorizeHandlers(request);
+            foreach (var authorizeHandler in authorizeHandlers)
+            {
+                authorizeHandler.Handle(request);
+            }
+
             var defaultHandler = GetHandler(request);
 
             var result = defaultHandler.Handle(request);
@@ -39,6 +46,13 @@ namespace MediatR
 
         public async Task<TResponse> SendAsync<TResponse>(IAsyncRequest<TResponse> request)
         {
+            // Call Pre Handlers
+            var authorizeHandlers = GetAuthorizeHandlers( request);
+            foreach (var authorizeHandler in authorizeHandlers)
+            {
+                await authorizeHandler.Handle(request);
+            }
+
             var defaultHandler = GetHandler(request);
 
             var result = await defaultHandler.Handle(request);
@@ -48,8 +62,15 @@ namespace MediatR
 
         public async Task<TResponse> SendAsync<TResponse>(ICancellableAsyncRequest<TResponse> request, CancellationToken cancellationToken)
         {
-            var defaultHandler = GetHandler(request);
+            // Call Pre Handlers
+            var authorizeHandlers = GetAuthorizeHandlers(request as ICancellableAsyncRequest);
+            foreach (var authorizeHandler in authorizeHandlers)
+            {
+                await authorizeHandler.Handle((ICancellableAsyncRequest) request, cancellationToken);
+            }
 
+            // Request Handler
+            var defaultHandler = GetHandler(request);
             var result = await defaultHandler.Handle(request, cancellationToken);
 
             return result;
@@ -163,7 +184,7 @@ namespace MediatR
                 .Cast<TWrapper>()
                 .ToList();
         }
-
+        
         private IEnumerable<object> GetNotificationHandlers(object notification, Type handlerType)
         {
             try
@@ -175,10 +196,57 @@ namespace MediatR
                 throw BuildException(notification, e);
             }
         }
-
+        
         private static InvalidOperationException BuildException(object message, Exception inner)
         {
             return new InvalidOperationException("Handler was not found for request of type " + message.GetType() + ".\r\nContainer or service locator not configured properly or handlers not registered with your container.", inner);
+        }
+    
+        private IEnumerable<AuthorizeHandlerWrapper<TResponse>> GetAuthorizeHandlers<TResponse>(IRequest<TResponse> request)
+        {
+            return GetAuthorizeHandlers<AuthorizeHandlerWrapper<TResponse>, TResponse>(request,
+                typeof(IAuthorizeHandler<,>),
+                typeof(AuthorizeHandlerWrapper<,>));
+        }
+
+        private IEnumerable<AsyncAuthorizeHandlerWrapper<TResponse>> GetAuthorizeHandlers<TResponse>(IAsyncRequest<TResponse> request)
+        {
+            return GetAuthorizeHandlers<AsyncAuthorizeHandlerWrapper<TResponse>, TResponse>(request,
+                typeof(IAsyncAuthorizeHandler<,>),
+                typeof(AsyncAuthorizeHandlerWrapper<,>));
+        }
+
+        private IEnumerable<CancellableAsyncAuthorizeHandlerWrapper<TResponse>> GetAuthorizeHandlers<TResponse>(ICancellableAsyncRequest<TResponse> request)
+        {
+            return GetAuthorizeHandlers<CancellableAsyncAuthorizeHandlerWrapper<TResponse>, TResponse>(request,
+                typeof(ICancellableAsyncAuthorizeHandler<,>),
+                typeof(CancellableAsyncAuthorizeHandlerWrapper<,>));
+        }
+
+        private IEnumerable<TWrapper> GetAuthorizeHandlers<TWrapper, TResponse>(object request, Type handlerType, Type wrapperType)
+        {
+            var requestType = request.GetType();
+
+            var genericHandlerType = handlerType.MakeGenericType(requestType, typeof(TResponse));
+            var genericWrapperType = wrapperType.MakeGenericType(requestType, typeof(TResponse));
+
+            return GetAuthorizeHandlers(request, genericHandlerType)
+                .Select(handler => Activator.CreateInstance(genericWrapperType, handler))
+                .Cast<TWrapper>()
+                .ToList();
+        }
+
+        private IEnumerable<object> GetAuthorizeHandlers(object request, Type handlerType)
+        {
+            try
+            {
+                var instances = _multiInstanceFactory(handlerType);
+                return instances;
+            }
+            catch (Exception e)
+            {
+                throw BuildException(request, e);
+            }
         }
     }
 }

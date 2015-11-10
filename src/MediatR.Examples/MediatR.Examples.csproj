@@ -39,11 +39,13 @@
     <Compile Include="GenericHandler.cs" />
     <Compile Include="Ping.cs" />
     <Compile Include="PingAsync.cs" />
+    <Compile Include="PingAsyncAuthorizeHandler.cs" />
     <Compile Include="PingAsyncHandler.cs" />
     <Compile Include="Pinged.cs" />
     <Compile Include="PingedAsync.cs" />
     <Compile Include="PingedAsyncHandler.cs" />
     <Compile Include="PingedHandler.cs" />
+    <Compile Include="PingAuthorizeHandler.cs" />
     <Compile Include="PingHandler.cs" />
     <Compile Include="Pong.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
